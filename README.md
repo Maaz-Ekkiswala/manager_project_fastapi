@@ -16,8 +16,10 @@
     `$ pip install -r requirements.txt`
 
 - **Run Migrations**
-
+      
+    `$  aerich init`
     `$  aerich init-db`
+    `$  aerich migrate`
 
 - **Run Server**
 
