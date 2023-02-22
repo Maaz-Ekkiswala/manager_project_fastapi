@@ -7,40 +7,24 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
 
 from apps.users.functions import get_password_hash
-from core.base import Timestamp
+from core.base import Base
 
 
-class User(Model, Timestamp):
-    id = fields.IntField(pk=True, autoincrement=True)
+class User(Model, Base):
     first_name = fields.CharField(max_length=255, null=True, required=False)
     last_name = fields.CharField(max_length=255, null=True, required=False)
     username = fields.CharField(max_length=100, unique=True)
     mobile = fields.CharField(max_length=10, unique=True)
     password_hash = fields.CharField(max_length=255)
-
-    def __str__(self):
-        return f"name: {self.first_name} {self.last_name}"
+    is_superuser = fields.BooleanField(default=False)
 
     class Meta:
         table: str = 'users'
 
     @classmethod
-    async def create_user(
-            cls,
-            username: str,
-            first_name: Optional[str],
-            last_name: Optional[str],
-            mobile: str,
-            password_hash: str
-    ) -> "User":
-        hashed_password = str(get_password_hash(password_hash))
-        user = await cls.create(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            mobile=mobile,
-            password_hash=hashed_password
-        )
+    async def create_user(cls, userdata):
+        userdata["password_hash"] = str(get_password_hash(userdata.pop("password_hash")))
+        user = await cls.create(**userdata)
         return user
 
     @classmethod
@@ -74,13 +58,3 @@ class User(Model, Timestamp):
         return existing_user
 
 
-User_Pydantic = pydantic_model_creator(User, name="User", exclude=("password_hash",))
-UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
-UserUpdate_Pydantic = pydantic_model_creator(
-    User, name="UserUpdate", exclude=(
-        "password_hash", "username", "created_at", "modified_at", "id"
-    )
-)
-UserLogin_Pydantic = pydantic_model_creator(
-    User, name="UserLogin", include=("username", "password_hash")
-)

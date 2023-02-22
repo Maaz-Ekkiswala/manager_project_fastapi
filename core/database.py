@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 from core.config import settings
@@ -12,11 +13,23 @@ def init(app: FastAPI):
         app,
         db_url=DB_URL,
         modules={"models": [
-                 "apps.users.models", "aerich.models"
-            ]},
+            "apps.users.models",
+            "aerich.models",
+            "apps.master.models",
+            "apps.projects.models",
+            "apps.issues.models",
+            "apps.comments.models",
+        ]},
         generate_schemas=False,
         add_exception_handlers=True,
     )
+    Tortoise.init_models([
+        "apps.users.models",
+        "apps.master.models",
+        "apps.projects.models",
+        "apps.issues.models",
+        "apps.comments.models",
+    ], "models")
 
 
 TORTOISE_ORM = {
@@ -24,9 +37,14 @@ TORTOISE_ORM = {
         "default": f'{DB_URL}',
     },
     "apps": {
-        "user": {
+        "models": {
             "models": [
-                 "apps.users.models", "aerich.models"
+                "apps.users.models",
+                "apps.master.models",
+                "apps.projects.models",
+                "apps.issues.models",
+                "apps.comments.models",
+                "aerich.models",
             ],
             "default_connection": "default",
         },
