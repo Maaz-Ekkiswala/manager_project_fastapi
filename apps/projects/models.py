@@ -14,7 +14,17 @@ class Project(Model, Base):
     name = fields.CharField(max_length=100, unique=True)
     description = fields.TextField(null=True, required=False)
     url = fields.CharField(max_length=100)
-    category_data: fields.ForeignKeyRelation[Category]
+    # category_data: fields.ForeignKeyRelation[Category]
+
+    @classmethod
+    async def is_name_exist(cls, name):
+        is_name_exist = await cls.get_or_none(name=name)
+        if is_name_exist:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Project with this name already exist"
+            )
+        return True
 
     @classmethod
     async def get_project_by_id(cls, project_id):
@@ -39,3 +49,6 @@ class ProjectUser(Model, Base):
     user = fields.ForeignKeyField(
         model_name="models.User", related_name="project_users", on_delete='CASCADE'
     )
+
+    class Meta:
+        unique_together = ("project", "user")

@@ -4,8 +4,15 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
+from apps.issues.schemas import IssueSchema, UpdatePutIssue, UpdateIssue
+# from apps.issues.models import Issue
 from apps.projects.models import Project
-from apps.projects.schemas import ProjectSchema, CreateProject
+from apps.projects.schemas import (
+    ProjectSchema, CreateProject, UpdateProjectSchema, UpdatePutProjectSchema,
+    ProjectIssuesSchema
+)
+from core.permissions import permissions
+# from core.permissions import permissions
 from core.valid_user import valid_user
 
 project_router = APIRouter(prefix="/project", tags=["project"])
@@ -29,6 +36,7 @@ async def create_project(
 
 
 @project_router.get("/{id}", response_model=ProjectSchema)
+@permissions(["project_user"])
 async def get_project_by_id(
         id: int,
         user: dict = Depends(valid_user)
@@ -44,10 +52,47 @@ async def get_project_by_id(
     return project_instance
 
 
+@project_router.get("", response_model=List[ProjectSchema])
+@permissions(["project_user"])
+async def get_list_of_projects(user: dict = Depends(valid_user)):
+    logger.debug(f"Trying to retrieve list of projects by user {user.get('id')}")
+    project_instances = await Project.all()
+    return project_instances
+
+
 @project_router.put("/{id}/", response_model=ProjectSchema)
+@permissions(["project_user"])
 async def update_project(
         id: int,
+        payload: UpdatePutProjectSchema,
         user: dict = Depends(valid_user)
 ):
     logger.debug(f"Trying to update project {id} by user {user.get('id')}")
-    pass
+    if payload.name:
+        await Project.is_name_exist(payload.name)
+    project_instance = await Project.get_project_by_id(project_id=id)
+    update_project_instance = await project_instance.update_from_dict(
+        data=payload.dict()
+    )
+    return update_project_instance
+
+
+@project_router.patch("/{id}/", response_model=ProjectSchema)
+@permissions(["project_user"])
+async def update_project(
+        id: int,
+        payload: UpdateProjectSchema,
+        user: dict = Depends(valid_user)
+):
+    logger.debug(f"Trying to update project {id} by user {user.get('id')}")
+    if payload.name:
+        await Project.is_name_exist(payload.name)
+    project_instance = await Project.get_project_by_id(project_id=id)
+    update_project_instance = await project_instance.update_from_dict(
+        data=payload.dict(exclude_unset=True)
+    )
+    return update_project_instance
+
+
+#
+#

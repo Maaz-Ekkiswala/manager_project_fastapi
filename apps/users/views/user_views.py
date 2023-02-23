@@ -50,8 +50,6 @@ async def update_user(
     user_instance = await User.get_user_by_id(user_id=id)
     if payload.mobile:
         await User.check_mobile_exist(mobile=payload.mobile)
-    await User.filter(id=id).update(
-        **payload.dict(exclude_unset=True)
-    )
+    updated_user = await user_instance.update_from_dict(data=payload.dict(exclude_unset=True))
     logger.debug(f"User updated successfully {user_instance.__dict__}")
-    return user_instance
+    return updated_user
