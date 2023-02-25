@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # AuthJWT
     authjwt_denylist_enabled: bool = True
     authjwt_denylist_token_checks: set = {"access", "refresh"}
-    access_expires = timedelta(minutes=15)
+    access_expires = timedelta(minutes=30)
     refresh_expires = timedelta(days=30)
 
     # Redis

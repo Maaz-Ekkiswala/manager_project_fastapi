@@ -57,4 +57,13 @@ class User(Model, Base):
             )
         return existing_user
 
+    @classmethod
+    async def get_multiple_user_by_ids(cls, ids):
+        users = await cls.filter(id__in=ids).values_list('id', flat=True)
+        if not set(ids).issubset(set(users)):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User not Found"
+            )
+        return users
 

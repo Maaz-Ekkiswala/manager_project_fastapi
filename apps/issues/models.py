@@ -12,7 +12,7 @@ class Issue(Model, Base):
     project = fields.ForeignKeyField(
         model_name="models.Project", related_name="issue_project", on_delete='CASCADE'
     )
-    title = fields.CharField(max_length=100, unique=True)
+    title = fields.CharField(max_length=200)
     type = fields.CharEnumField(enum_type=Type, default=Type.TASK.value, max_length=20)
     status = fields.CharEnumField(
         enum_type=Status, default=Status.PENDING.value, max_length=50

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -13,14 +13,14 @@ class IssueSchema(BaseModel):
     priority: Priority
     description: Optional[str]
     project_id: int
+    issue_users: Optional[List[int]]
 
 
 class CreateIssue(BaseModel):
-    project_id: int
     title: str
-    type: Type
-    status: Status
-    priority: Priority
+    type: Optional[Type]
+    status: Optional[Status]
+    priority: Optional[Priority]
     description: Optional[str]
 
 
@@ -40,3 +40,6 @@ class UpdateIssue(BaseModel):
     description: Optional[str]
     is_active: Optional[bool]
 
+
+class CreateIssueUser(BaseModel):
+    users: List[int]
